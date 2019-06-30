@@ -1,0 +1,33 @@
+---
+- hosts : all
+  gather_facts: yes
+  tasks:
+  - name: upgrade all packages
+    yum:
+      name: '*'
+      state: latest
+
+  - name : ensure apache is at the latest version
+    yum:
+      name: httpd
+      state: latest
+    become: yes
+
+  - name : replace the port in httpd config file
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^Listen*'
+      line: 'Listen 8090'
+    become: yes
+    notify:
+      - restart httpd
+
+  handlers:
+  - name: restart httpd
+    service:
+      name: httpd
+      state: restarted
+      enabled: yes
+    become: yes
+    tags: restart
+
